@@ -2,64 +2,64 @@ import requests
 from keys import api_key
 
 keyword = 'talbina'
-maxResults = 5
+maxResults = 20
 
-
-def video_title(videoId):
-    views = requests.get(
+def statistics(videoId, api_key):
+    video_info = requests.get(
         f"https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={videoId}&key={api_key}")
-    view = views.json()
-    video_title = view["items"][0]["snippet"]["title"]
-    return video_title
-
-
-def video_tags(videoId):
-    views = requests.get(
-        f"https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={videoId}&key={api_key}")
-    view = views.json()
-    try:
-        video_tags = view["items"][0]["snippet"]["tags"]
-    except:
-        video_tags = 'N/A'
-    return video_tags
-
-
-def view_count(videoId):
-    views = requests.get(
-        f"https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={videoId}&key={api_key}")
-    view = views.json()
-    view_count = view['items'][0]['statistics']['viewCount']
-    return view_count
-
+    video_info_array = video_info.json()
+    return video_info_array
 
 class Video():
-    def __init__(self, id, head, tag, view):
-        self.id = videoId
-        self.head = video_title(id)
-        self.tag = video_tags(id)
-        self.view = view_count(id)
+    def __init__(self, videoId):
+        self.videoId = videoId
+        self.head = self.head()
+        self.tag = self.video_tags()
+        self.view = self.view_count()
+
+    def view_count(self):
+        video_view_array = statistics(videoId, api_key)
+        view_count = video_view_array['items'][0]['statistics']['viewCount']
+        view_count_int = int(view_count)
+        return view_count_int
+
+    def head(self):
+        video_view_array = statistics(videoId, api_key)
+        video_title = video_view_array["items"][0]["snippet"]["title"]
+        return str(video_title)
+
+    def video_tags(self):
+        # tags = requests.get(
+        #     f"https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={videoId}&key={api_key}")
+        # tag = tags.json()
+        video_view_array = statistics(videoId, api_key)
+        try:
+            video_tags = video_view_array["items"][0]["snippet"]["tags"]
+        except:
+            video_tags = 'N/A'
+        return video_tags
 
 
 video = requests.get(
     f"https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults={maxResults}&q={keyword}&type=video&key={api_key}&order=relevance")
 video_list = video.json()
+
 x = 0
 video_container = []
 
 while x != maxResults:
     videoId = video_list["items"][x]["id"]["videoId"]
-    channel_title = video_list["items"][x]["snippet"]["channelTitle"]
-    video_container.append(videoId)
+    video_container.append(Video(videoId))
+    x += 1
 
-print(video_container)
+# v = video_container[0]
+# print(v.videoId)
+# print(v.head)
+# print(v.view)
+# print(v.tag)
 
-# while x != maxResults:
-#     videoId = video_list["items"][x]["id"]["videoId"]
-#     channel_title = video_list["items"][x]["snippet"]["channelTitle"]
-#     title = video_title(videoId)
-#     views = view_count(videoId)
-#     tags = video_tags(videoId)
-#     print(f'{title} - {views} - {tags}')
-#     x += 1
+video_container.sort(key=lambda x: x.view, reverse=True)
 
-print(f'Showing {x} results')
+for y in video_container:
+    print(f'{y.head}, https://www.youtube.com/watch?v={y.videoId}, {y.view}')
+
