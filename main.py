@@ -2,8 +2,9 @@ import requests
 from keys import api_key
 from datetime import datetime
 
-keyword = 'shami kebab'
-maxResults = 20
+keyword = 'minecraft'
+maxResults = 50
+
 
 def statistics(videoId, api_key):
     video_info = requests.get(
@@ -11,10 +12,12 @@ def statistics(videoId, api_key):
     video_info_array = video_info.json()
     return video_info_array
 
+
 class Keywords():
     def __init__(self, keyword, num):
         self.keyword = keyword
         self.num = num
+
 
 class Video():
     def __init__(self, videoId):
@@ -24,7 +27,6 @@ class Video():
         self.view = self.view_count()
         self.days = self.days()
         self.score = self.calculate_score()
-
 
     def view_count(self):
         video_view_array = statistics(videoId, api_key)
@@ -58,7 +60,12 @@ class Video():
         return video_tags
 
     def calculate_score(self):
-        score = self.view/self.days
+        try:
+            score = self.view/self.days
+        except ZeroDivisionError as error:
+            print('Found a zero error, rounding less than a day to a full day')
+            score = self.view / 1
+
         return score
 
 
@@ -78,8 +85,8 @@ while x != maxResults:
 
 video_container.sort(key=lambda x: x.score, reverse=True)
 
-# for y in video_container:
-#     print(f'{y.head}, https://www.youtube.com/watch?v={y.videoId}, {y.view}, {y.score}')
+for y in video_container:
+    print(f'{y.head}, https://www.youtube.com/watch?v={y.videoId}, {y.view}, {y.score}')
 
 keywords = []
 for a in video_container[:5]:
