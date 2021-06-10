@@ -76,6 +76,7 @@ x = 0
 video_container = []
 
 while x != maxResults:
+
     videoId = video_list["items"][x]["id"]["videoId"]
     video_container.append(Video(videoId))
     x += 1
